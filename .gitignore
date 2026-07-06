@@ -31,3 +31,4 @@ coverage/
 # Local runtime binaries & logs
 .node/
 *.log
+node_modules
