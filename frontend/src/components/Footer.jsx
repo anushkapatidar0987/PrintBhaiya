@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Printer, Heart } from 'lucide-react';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Hide footer on dashboard pages if needed, or keep it.
+  // We'll keep it as it's currently rendered globally.
 
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -13,186 +19,87 @@ export default function Footer() {
     }
   };
 
+  const onEnterPortal = (role) => {
+    if (role === 'student') navigate('/auth?mode=register');
+    else if (role === 'shopkeeper') navigate('/auth?mode=login');
+    else if (role === 'admin') navigate('/superadmin');
+  };
+
   return (
-    <footer style={styles.footer}>
-      <div className="container">
-        {/* Top Section */}
-        <div style={styles.topSection}>
+    <footer className="mt-auto bg-[#191A23] text-white pt-16 pb-8 border-t border-slate-800">
+      <div className="w-full max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12 text-left">
+          
           {/* Brand Info */}
-          <div style={styles.brandCol}>
-            <div style={styles.logoContainer}>
-              <span style={styles.logoText}>PrintKarDoBhaiya</span>
-              <span style={styles.logoEmoji}>🖨️</span>
-            </div>
-            <p style={styles.brandDesc}>
-              Skip the queue. Print smart. Get your files printed at your local campus shop and pick them up when ready.
+          <div className="md:col-span-1 space-y-4">
+            <h2 className="font-display font-bold text-2xl flex items-center gap-2">
+              <Printer className="h-6 w-6 text-emerald-400" />
+              PrintKarDoBhaiya
+            </h2>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Skip the queue. Print smart. Revolutionizing campus printing with transparent pricing and instant cloud spools.
             </p>
           </div>
-
-          {/* Nav Links */}
-          <div style={styles.linksCol}>
-            <h4 style={styles.colTitle}>Navigation</h4>
-            <div style={styles.linksList}>
-              <Link to="/" style={styles.link}>Home</Link>
-              <Link to="/auth?mode=login" style={styles.link}>Login</Link>
-              <Link to="/auth?mode=register" style={styles.link}>Register Shop</Link>
-            </div>
+          
+          {/* Navigation Links */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-sm text-emerald-400 uppercase tracking-wider">Navigation</h4>
+            <ul className="space-y-2 text-sm text-slate-300">
+              <li><button onClick={() => navigate('/')} className="hover:text-emerald-400 transition-colors">Home</button></li>
+              <li><button onClick={() => onEnterPortal('student')} className="hover:text-emerald-400 transition-colors">Student Portal</button></li>
+              <li><button onClick={() => onEnterPortal('shopkeeper')} className="hover:text-emerald-400 transition-colors">Partner Stores</button></li>
+              <li><button onClick={() => onEnterPortal('admin')} className="hover:text-emerald-400 transition-colors">Admin Dashboard</button></li>
+            </ul>
           </div>
 
-          {/* Newsletter / Contact */}
-          <div style={styles.newsletterCol}>
-            <h4 style={styles.colTitle}>Keep Updated</h4>
+          {/* Legal & Support */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-sm text-emerald-400 uppercase tracking-wider">Legal & Support</h4>
+            <ul className="space-y-2 text-sm text-slate-300">
+              <li><Link to="/terms" className="hover:text-emerald-400 transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms#refund" className="hover:text-emerald-400 transition-colors">Refund Policy</Link></li>
+              <li className="pt-2">
+                <span className="block text-xs font-semibold text-slate-400 mb-1">Contact Us</span>
+                <a href="mailto:support@printkardobhaiya.com" className="text-emerald-400 hover:underline">support@printkardobhaiya.com</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-sm text-emerald-400 uppercase tracking-wider">Keep Updated</h4>
             {!subscribed ? (
-              <form onSubmit={handleSubscribe} style={styles.form}>
+              <form onSubmit={handleSubscribe} className="flex flex-col gap-3">
                 <input
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  style={styles.input}
+                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:outline-none focus:border-emerald-500 text-white placeholder-slate-500"
                   required
                 />
-                <button type="submit" className="btn btn-accent" style={styles.subscribeBtn}>
+                <button type="submit" className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-bold rounded-lg text-sm transition-colors">
                   Subscribe
                 </button>
               </form>
             ) : (
-              <div style={styles.subscribedMsg}>
+              <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg text-sm font-medium">
                 🎉 Thank you for subscribing!
               </div>
             )}
           </div>
+
         </div>
-
-        {/* Separator line */}
-        <div style={styles.separator}></div>
-
+        
         {/* Bottom Section */}
-        <div style={styles.bottomSection}>
-          <span style={styles.copyText}>
-            &copy; {new Date().getFullYear()} PrintKarDoBhaiya. All rights reserved.
-          </span>
-          <div style={styles.bottomLinks}>
-            <span style={styles.bottomLink}>Terms of Service</span>
-            <span style={styles.bottomLink}>Privacy Policy</span>
-          </div>
+        <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-400">
+          <p>&copy; {new Date().getFullYear()} Print Kar Do Bhaiya. All rights reserved.</p>
+          <p className="flex items-center gap-1">
+            Made with <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-500" /> for Campus Students
+          </p>
         </div>
       </div>
     </footer>
   );
 }
-
-const styles = {
-  footer: {
-    backgroundColor: 'var(--dark-slate)',
-    color: 'var(--white)',
-    padding: '4rem 0 2rem 0',
-    marginTop: 'auto',
-    borderTop: 'var(--border-width) solid var(--border-color)',
-  },
-  topSection: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '3rem',
-    justifyContent: 'space-between',
-    marginBottom: '2.5rem',
-  },
-  brandCol: {
-    flex: '2 1 350px',
-  },
-  logoContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    marginBottom: '1rem',
-  },
-  logoText: {
-    fontSize: '1.75rem',
-    fontWeight: '700',
-    color: 'var(--white)',
-  },
-  logoEmoji: {
-    fontSize: '1.75rem',
-  },
-  brandDesc: {
-    color: '#D0D0D5',
-    fontSize: '1rem',
-    maxWidth: '380px',
-    lineHeight: '1.6',
-  },
-  linksCol: {
-    flex: '1 1 150px',
-  },
-  colTitle: {
-    color: 'var(--white)',
-    fontSize: '1.125rem',
-    fontWeight: '700',
-    marginBottom: '1.25rem',
-  },
-  linksList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-  },
-  link: {
-    color: '#D0D0D5',
-    fontSize: '0.95rem',
-    transition: 'color 0.2s',
-  },
-  newsletterCol: {
-    flex: '2 1 300px',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-    maxWidth: '350px',
-  },
-  input: {
-    padding: '0.75rem 1rem',
-    fontSize: '1rem',
-    fontFamily: 'var(--font-sans)',
-    borderRadius: 'var(--border-radius-md)',
-    border: '1px solid #444',
-    backgroundColor: '#2A2B35',
-    color: 'var(--white)',
-  },
-  subscribeBtn: {
-    padding: '0.6rem 1rem',
-    fontSize: '1rem',
-    width: '100%',
-  },
-  subscribedMsg: {
-    backgroundColor: '#2A2B35',
-    padding: '0.75rem 1rem',
-    borderRadius: 'var(--border-radius-md)',
-    color: 'var(--neon-green)',
-    fontWeight: '500',
-    border: '1px solid var(--neon-green)',
-  },
-  separator: {
-    height: '1px',
-    backgroundColor: '#3A3B45',
-    margin: '2rem 0',
-  },
-  bottomSection: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '1rem',
-    fontSize: '0.9rem',
-    color: '#A0A0A5',
-  },
-  copyText: {
-    display: 'inline-block',
-  },
-  bottomLinks: {
-    display: 'flex',
-    gap: '1.5rem',
-  },
-  bottomLink: {
-    cursor: 'pointer',
-    transition: 'color 0.2s',
-  }
-};

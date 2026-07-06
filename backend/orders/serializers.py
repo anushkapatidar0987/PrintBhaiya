@@ -26,7 +26,7 @@ class PricePreviewResponseSerializer(serializers.Serializer):
 class OrderFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderFile
-        fields = ('id', 'original_filename', 'file_type', 'file_size_bytes', 'file_url', 'created_at')
+        fields = ('id', 'original_filename', 'file_type', 'file_size_bytes', 'file', 'file_url', 'created_at')
 
 
 class OrderStatusHistorySerializer(serializers.ModelSerializer):
@@ -115,11 +115,12 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 class OrderListSerializer(serializers.ModelSerializer):
     shop_name = serializers.CharField(source='shop.name', read_only=True)
     student_name = serializers.CharField(source='student.get_full_name', read_only=True)
+    files = OrderFileSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
         fields = ('id', 'order_number', 'shop_name', 'student_name', 'status', 'color_mode', 
-                  'page_count', 'copies', 'total_amount', 'created_at')
+                  'page_count', 'copies', 'total_amount', 'created_at', 'files')
 
 
 class OrderDetailSerializer(OrderListSerializer):

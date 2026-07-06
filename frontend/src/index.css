@@ -1,7 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 :root {
-  --neon-green: #B9FF66;
+  --neon-green: #34D399; /* Emerald Mint */
   --dark-slate: #191A23;
   --light-gray: #F3F3F3;
   --white: #FFFFFF;
@@ -28,7 +32,7 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--white);
+  background-color: #ecfdf5; /* Emerald Mint */
   color: var(--dark-slate);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -87,7 +91,7 @@ a {
 }
 
 .highlight-white {
-  background-color: var(--white);
+  background-color: #ecfdf5; /* Emerald Mint */
   color: var(--dark-slate);
   padding: 0.2rem 0.5rem;
   border-radius: var(--border-radius-sm);
@@ -109,7 +113,7 @@ a {
 
 /* Neo-Brutalist Layout Cards */
 .card {
-  background-color: var(--white);
+  background-color: #ecfdf5; /* Emerald Mint */
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
@@ -192,7 +196,7 @@ a {
 }
 
 .btn-secondary {
-  background-color: var(--white);
+  background-color: #ecfdf5; /* Emerald Mint */
   color: var(--dark-slate);
   box-shadow: var(--shadow-md);
 }
@@ -300,7 +304,7 @@ a {
   font-size: 1rem;
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius-md);
-  background-color: var(--white);
+  background-color: #ecfdf5; /* Emerald Mint */
   transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
@@ -312,7 +316,7 @@ a {
 
 /* Black & White Style for Registration / Login Form */
 .bw-container {
-  background-color: var(--white);
+  background-color: #ecfdf5; /* Emerald Mint */
   color: var(--dark-slate);
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius-lg);
@@ -464,5 +468,43 @@ a {
   50% {
     box-shadow: 6px 6px 0px #191A23, 0 0 20px rgba(185, 255, 102, 0.4);
     transform: translate(-2px, -2px);
+  }
+}
+
+
+@layer utilities {
+  .glass-light {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.70);
+    box-shadow: 
+      0 10px 40px -10px rgba(0, 0, 0, 0.04),
+      inset 0 1px 2px 0 rgba(255, 255, 255, 0.5);
+  }
+}
+
+
+/* Floating shape elements behind the app canvas */
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.6;
+  z-index: -10;
+  pointer-events: none;
+  animation: float-slow 20s infinite alternate ease-in-out;
+}
+
+/* Keyframe Animations */
+@keyframes float-slow {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(30px, -50px) scale(1.15);
+  }
+  100% {
+    transform: translate(-20px, 20px) scale(0.9);
   }
 }

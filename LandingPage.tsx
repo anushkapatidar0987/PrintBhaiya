@@ -1,65 +1,42 @@
 import React, { useState } from 'react';
+import { Shop, Order } from '../types';
+import { calculatePrintCost } from '../mockData';
 import {
   Printer, ArrowRight, UploadCloud, Coins, Sparkles,
   Search, ShieldCheck, MapPin, Clock,
-  HelpCircle, CheckCircle2, AlertCircle, Star, Heart
+  HelpCircle, CheckCircle2, AlertCircle, Star
 } from 'lucide-react';
 
+interface LandingPageProps {
+  shops: Shop[];
+  orders: Order[];
+  onEnterPortal: (role: 'student' | 'shopkeeper' | 'admin') => void;
+}
 
-
-import { useNavigate } from 'react-router-dom';
-import { shopService } from '../services/api';
-
-export default function LandingPage() {
-  const navigate = useNavigate();
-  const [shops, setShops] = React.useState([]);
-  
-  React.useEffect(() => {
-    shopService.getPublicList()
-      .then(res => setShops(res.data.results || res.data))
-      .catch(err => console.error("Failed to fetch shops", err));
-  }, []);
-
-  const onEnterPortal = (role) => {
-    if (role === 'student') navigate('/auth?mode=register');
-    else if (role === 'shopkeeper') navigate('/auth?mode=login');
-    else if (role === 'admin') navigate('/superadmin');
-  };
-
-  const calculatePrintCost = (pages, copies, type, sides, shop) => {
-    if (!shop || !shop.price_list) return 0;
-    const pl = shop.price_list;
-    let pageRate = type === 'color' ? pl.color_rate_per_page : pl.bw_rate_per_page;
-    if (sides === 'double' && pl.double_sided_supported && pl.double_sided_rate_per_page) {
-       pageRate = pl.double_sided_rate_per_page;
-    }
-    const baseCost = pages * copies * pageRate;
-    return baseCost < pl.minimum_order_amount ? pl.minimum_order_amount : baseCost;
-  };
-
+export default function LandingPage({ shops, orders, onEnterPortal }: LandingPageProps) {
   // Calculator States
   const [calcPages, setCalcPages] = useState(10);
   const [calcCopies, setCalcCopies] = useState(1);
-  const [calcType, setCalcType] = useState('bw');
-  const [calcSides, setCalcSides] = useState('single');
+  const [calcType, setCalcType] = useState<'bw' | 'color'>('bw');
+  const [calcSides, setCalcSides] = useState<'single' | 'double'>('single');
   const [calcShopId, setCalcShopId] = useState(shops[0]?.id || '');
 
   // Tracker state
   const [searchOrderId, setSearchOrderId] = useState('');
-  const [trackedOrder, setTrackedOrder] = useState(null);
+  const [trackedOrder, setTrackedOrder] = useState<Order | null>(null);
   const [trackError, setTrackError] = useState(false);
 
   // Calculate prices
   const activeCalcShop = shops.find(s => s.id === calcShopId) || shops[0];
   const calcPrice = activeCalcShop ? calculatePrintCost(calcPages, calcCopies, calcType, calcSides, activeCalcShop) : 0;
 
-  const handleTrackOrder = (e) => {
+  const handleTrackOrder = (e: React.FormEvent) => {
     e.preventDefault();
     setTrackError(false);
     setTrackedOrder(null);
 
     const normalizedId = searchOrderId.trim().toUpperCase();
-    const found = ([]).find(o => o.id.toUpperCase() === normalizedId || `#${o.id.toUpperCase()}` === normalizedId);
+    const found = orders.find(o => o.id.toUpperCase() === normalizedId || `#${o.id.toUpperCase()}` === normalizedId);
 
     if (found) {
       setTrackedOrder(found);
@@ -87,7 +64,7 @@ export default function LandingPage() {
             Print Kar Do <span className="bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">Bhaiya.</span>
           </h1>
 
-          <p className="text-slate-500 font-sans text-lg sm:text-xl md:text-2xl font-medium max-w-3xl mx-auto leading-relaxed">
+          <p className="text-slate-500 font-sans text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
             Zero queues. High fidelity sheets. Send your PDFs, slides, and manuals directly to any local campus print shop and collect instantly when spooled.
           </p>
 
@@ -116,18 +93,18 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="h-4.5 w-4.5 text-indigo-500" />
-              <span>Get your print without queue</span>
+              <span>~8m Average Spool Time</span>
             </div>
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="h-4.5 w-4.5 text-purple-500" />
-              <span>Razorpay Secure Payments</span>
+              <span>Secure UPI Sandbox Payments</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* 2. HOW IT WORKS SECTION */}
-      <section className="w-full max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 text-center" id="how-it-works">
+      <section className="max-w-6xl mx-auto px-4 text-center" id="how-it-works">
         <div className="space-y-2 mb-12">
           <h2 className="font-display font-extrabold text-3xl text-slate-900 tracking-tight">How It Works</h2>
           <p className="text-slate-400 text-xs">Four lightning fast steps to printed papers</p>
@@ -135,7 +112,7 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1 */}
-          <div className="glass-panel rounded-3xl p-6 md:p-8 text-left border border-white/60 space-y-4 hover:translate-y-[-4px] transition-transform">
+          <div className="glass-panel rounded-3xl p-6 text-left border border-white/60 space-y-4 hover:translate-y-[-4px] transition-transform">
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-xl font-bold text-indigo-600 font-display">
               1
             </div>
@@ -146,7 +123,7 @@ export default function LandingPage() {
           </div>
 
           {/* Card 2 */}
-          <div className="glass-panel rounded-3xl p-6 md:p-8 text-left border border-white/60 space-y-4 hover:translate-y-[-4px] transition-transform">
+          <div className="glass-panel rounded-3xl p-6 text-left border border-white/60 space-y-4 hover:translate-y-[-4px] transition-transform">
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-xl font-bold text-emerald-600 font-display">
               2
             </div>
@@ -157,7 +134,7 @@ export default function LandingPage() {
           </div>
 
           {/* Card 3 */}
-          <div className="glass-panel rounded-3xl p-6 md:p-8 text-left border border-white/60 space-y-4 hover:translate-y-[-4px] transition-transform">
+          <div className="glass-panel rounded-3xl p-6 text-left border border-white/60 space-y-4 hover:translate-y-[-4px] transition-transform">
             <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-xl font-bold text-amber-600 font-display">
               3
             </div>
@@ -168,7 +145,7 @@ export default function LandingPage() {
           </div>
 
           {/* Card 4 */}
-          <div className="glass-panel rounded-3xl p-6 md:p-8 text-left border border-white/60 space-y-4 hover:translate-y-[-4px] transition-transform">
+          <div className="glass-panel rounded-3xl p-6 text-left border border-white/60 space-y-4 hover:translate-y-[-4px] transition-transform">
             <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-xl font-bold text-purple-600 font-display">
               4
             </div>
@@ -181,58 +158,58 @@ export default function LandingPage() {
       </section>
 
       {/* 3. CALCULATOR & TRACKER BENTO GRID */}
-      <section className="w-full max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20" id="pricing-bento">
+      <section className="max-w-6xl mx-auto px-4" id="pricing-bento">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
           {/* Bento Block 1: The Print Cost Calculator (3 cols wide) */}
-          <div className="lg:col-span-3 glass-panel rounded-3xl p-6 md:p-8 lg:p-10 border border-white/60 shadow-xl shadow-slate-100/50 flex flex-col justify-between space-y-6" id="bento-calculator">
+          <div className="lg:col-span-3 glass-panel rounded-3xl p-6 border border-white/60 shadow-xl shadow-slate-100/50 flex flex-col justify-between space-y-6" id="bento-calculator">
             <div>
               <h3 className="text-lg font-display font-bold text-slate-800 flex items-center gap-2">
                 <Coins className="h-5 w-5 text-indigo-600" />
                 <span>Instant Cost Estimator</span>
               </h3>
-              <p className="text-xs md:text-sm text-slate-500 mt-1">Simulate combinations across available local campus shops</p>
+              <p className="text-xs text-slate-400 mt-1">Simulate combinations across available local campus shops</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
               {/* Pages count input */}
               <div className="space-y-1">
-                <label className="text-xs md:text-sm font-bold text-slate-500">Document Page Spread</label>
+                <label className="text-[11px] font-bold text-slate-500">Document Page Spread</label>
                 <input
                   type="number"
                   min="1"
                   value={calcPages}
                   onChange={(e) => setCalcPages(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs"
                 />
               </div>
 
               {/* Copies input */}
               <div className="space-y-1">
-                <label className="text-xs md:text-sm font-bold text-slate-500">Quantity (Copies)</label>
+                <label className="text-[11px] font-bold text-slate-500">Quantity (Copies)</label>
                 <input
                   type="number"
                   min="1"
                   value={calcCopies}
                   onChange={(e) => setCalcCopies(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs"
                 />
               </div>
 
               {/* Ink Mode Type */}
               <div className="space-y-1">
-                <label className="text-xs md:text-sm font-bold text-slate-500">Ink Selection</label>
+                <label className="text-[11px] font-bold text-slate-500">Ink Selection</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
                     onClick={() => setCalcType('bw')}
-                    className={`py-3 text-sm rounded-lg font-bold border transition-colors ${calcType === 'bw' ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500'
+                    className={`py-2 text-xs rounded-lg font-semibold border transition-colors ${calcType === 'bw' ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500'
                       }`}
                   >
                     B&W
                   </button>
                   <button
                     onClick={() => setCalcType('color')}
-                    className={`py-3 text-sm rounded-lg font-bold border transition-colors ${calcType === 'color' ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500'
+                    className={`py-2 text-xs rounded-lg font-semibold border transition-colors ${calcType === 'color' ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500'
                       }`}
                   >
                     Premium Color
@@ -242,18 +219,18 @@ export default function LandingPage() {
 
               {/* Sides Type */}
               <div className="space-y-1">
-                <label className="text-xs md:text-sm font-bold text-slate-500">Sheet Layout</label>
+                <label className="text-[11px] font-bold text-slate-500">Sheet Layout</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
                     onClick={() => setCalcSides('single')}
-                    className={`py-3 text-sm rounded-lg font-bold border transition-colors ${calcSides === 'single' ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500'
+                    className={`py-2 text-xs rounded-lg font-semibold border transition-colors ${calcSides === 'single' ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500'
                       }`}
                   >
                     Single Sided
                   </button>
                   <button
                     onClick={() => setCalcSides('double')}
-                    className={`py-3 text-sm rounded-lg font-bold border transition-colors ${calcSides === 'double' ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500'
+                    className={`py-2 text-xs rounded-lg font-semibold border transition-colors ${calcSides === 'double' ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500'
                       }`}
                   >
                     Duplex layout
@@ -261,20 +238,20 @@ export default function LandingPage() {
                 </div>
               </div>
 
+              {/* Shop pricing selection */}
               <div className="sm:col-span-2 space-y-1">
-                <label className="text-xs md:text-sm font-bold text-slate-500">Estimate Rates From Shop</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <label className="text-[11px] font-bold text-slate-500">Estimate Rates From Shop</label>
+                <select
+                  value={calcShopId}
+                  onChange={(e) => setCalcShopId(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs appearance-none"
+                >
                   {shops.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => setCalcShopId(s.id)}
-                      className={`text-left p-3 rounded-xl border transition-colors ${calcShopId === s.id ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700' : 'border-slate-200 text-slate-500 bg-white hover:border-indigo-300'}`}
-                    >
-                      <div className="font-bold text-sm">{s.name}</div>
-                      <div className="text-[10px] mt-1 opacity-80">B&W: ₹{s.price_list?.bw_rate_per_page}/pg | Color: ₹{s.price_list?.color_rate_per_page}/pg</div>
-                    </button>
+                    <option key={s.id} value={s.id}>
+                      {s.name} (B&W: ₹{s.pricing.blackAndWhite}/pg • Color: ₹{s.pricing.color}/pg)
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
             </div>
 
@@ -295,13 +272,13 @@ export default function LandingPage() {
           </div>
 
           {/* Bento Block 2: Live status tracker query (2 cols wide) */}
-          <div className="lg:col-span-2 glass-panel rounded-3xl p-6 md:p-8 lg:p-10 border border-white/60 shadow-xl shadow-slate-100/50 flex flex-col justify-between space-y-6" id="bento-tracker">
+          <div className="lg:col-span-2 glass-panel rounded-3xl p-6 border border-white/60 shadow-xl shadow-slate-100/50 flex flex-col justify-between space-y-6" id="bento-tracker">
             <div>
               <h3 className="text-lg font-display font-bold text-slate-800 flex items-center gap-2">
                 <Search className="h-5 w-5 text-indigo-600" />
                 <span>Quick Status Tracker</span>
               </h3>
-              <p className="text-xs md:text-sm text-slate-500 mt-1">Enter your Print ID to monitor ongoing print cycles without logging in</p>
+              <p className="text-xs text-slate-400 mt-1">Enter your Print ID to monitor ongoing print cycles without logging in</p>
             </div>
 
             <form onSubmit={handleTrackOrder} className="space-y-3 text-left">
@@ -374,7 +351,7 @@ export default function LandingPage() {
       </section>
 
       {/* 4. ACTIVE CAMPUS DIRECTORY SECTION */}
-      <section className="w-full max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 text-center" id="active-shops">
+      <section className="max-w-6xl mx-auto px-4 text-center" id="active-shops">
         <div className="space-y-2 mb-12">
           <h2 className="font-display font-extrabold text-3xl text-slate-900 tracking-tight">Active Partners</h2>
           <p className="text-slate-400 text-xs">Live statuses of printing booths near your campus departments</p>
@@ -384,7 +361,7 @@ export default function LandingPage() {
           {shops.map((shop) => (
             <div
               key={shop.id}
-              className={`glass-panel rounded-3xl p-6 md:p-8 lg:p-10 border border-white/60 shadow-md flex flex-col justify-between space-y-4 hover:shadow-lg transition-all ${shop.status === 'online' ? '' : 'opacity-65'
+              className={`glass-panel rounded-3xl p-6 border border-white/60 shadow-md flex flex-col justify-between space-y-4 hover:shadow-lg transition-all ${shop.status === 'online' ? '' : 'opacity-65'
                 }`}
             >
               <div className="flex items-start justify-between">
@@ -411,7 +388,7 @@ export default function LandingPage() {
                 <div className="grid grid-cols-2 gap-2 py-2 border-y border-slate-100 text-xs">
                   <div>
                     <span className="text-slate-400 block text-[10px]">Black & White rate</span>
-                    <span className="font-mono font-bold text-slate-700">₹{shop.price_list?.bw_rate_per_page}/pg</span>
+                    <span className="font-mono font-bold text-slate-700">₹{shop.pricing.blackAndWhite}/pg</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px]">Queue wait estimate</span>
@@ -453,10 +430,10 @@ export default function LandingPage() {
           <div className="glass-panel rounded-2xl p-5 border border-white/60 shadow-sm space-y-1.5">
             <h4 className="font-display font-bold text-slate-800 text-sm flex items-center gap-2">
               <HelpCircle className="h-4.5 w-4.5 text-indigo-500 shrink-0" />
-              <span>Can I pay cash on the counter?</span>
+              <span>How do I pay? Do you accept cash?</span>
             </h4>
             <p className="text-xs text-slate-500 pl-6.5 leading-relaxed">
-              No. All payments must be completed securely online via Razorpay using UPI before the print order is placed.
+              We highly recommend our UPI dynamic sandboxed checkout which takes 3 seconds and settles directly with the shop operator. However, you can also opt to select "Pay Cash at Counter" in the wizard and pay when you collect your papers.
             </p>
           </div>
 
@@ -464,10 +441,10 @@ export default function LandingPage() {
           <div className="glass-panel rounded-2xl p-5 border border-white/60 shadow-sm space-y-1.5">
             <h4 className="font-display font-bold text-slate-800 text-sm flex items-center gap-2">
               <HelpCircle className="h-4.5 w-4.5 text-indigo-500 shrink-0" />
-              <span>What doc type can I transfer?</span>
+              <span>What document types can I transmit?</span>
             </h4>
             <p className="text-xs text-slate-500 pl-6.5 leading-relaxed">
-              All common document types are supported, including PDF, DOCX, PPTX, JPG, and PNG files.
+              Our cloud servers can securely compile PDF, Microsoft Word (DOCX), PowerPoint presentation slides (PPTX), and high resolution images (PNG, JPG).
             </p>
           </div>
 
@@ -475,27 +452,14 @@ export default function LandingPage() {
           <div className="glass-panel rounded-2xl p-5 border border-white/60 shadow-sm space-y-1.5">
             <h4 className="font-display font-bold text-slate-800 text-sm flex items-center gap-2">
               <HelpCircle className="h-4.5 w-4.5 text-indigo-500 shrink-0" />
-              <span>Are my files private?</span>
+              <span>Is my document data private?</span>
             </h4>
             <p className="text-xs text-slate-500 pl-6.5 leading-relaxed">
-              Yes. According to our terms and conditions, all files are strictly confidential and get automatically deleted 30 minutes after your print is completed.
-            </p>
-          </div>
-          
-          {/* FAQ 4 */}
-          <div className="glass-panel rounded-2xl p-5 border border-white/60 shadow-sm space-y-1.5">
-            <h4 className="font-display font-bold text-slate-800 text-sm flex items-center gap-2">
-              <HelpCircle className="h-4.5 w-4.5 text-indigo-500 shrink-0" />
-              <span>How will I know my print is ready?</span>
-            </h4>
-            <p className="text-xs text-slate-500 pl-6.5 leading-relaxed">
-              You will receive an instant alert on your dashboard as soon as the shop operator marks your print as "Ready for Collection."
+              Yes, absolutely. All transmitted PDFs are automatically sandboxed, encrypted in transit, and spooled directly to local print queues. Once completed or cancelled by the operator, they are permanently cleared from cache storage.
             </p>
           </div>
         </div>
       </section>
-
-
     </div>
   );
 }

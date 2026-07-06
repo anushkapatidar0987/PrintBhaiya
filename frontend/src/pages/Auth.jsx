@@ -86,8 +86,11 @@ export default function Auth({ onLoginSuccess }) {
             throw new Error("Could not fetch shop details");
           }
         } else if (user.role === 'admin') {
-          onLoginSuccess(user);
-          navigate('/admin/dashboard');
+          // Block admin from logging in via public auth page
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          throw new Error("Super Admins cannot log in here. Please use the /superadmin portal.");
         }
       } else {
         // Register Mode

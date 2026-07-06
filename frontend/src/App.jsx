@@ -3,10 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import LandingPage from './pages/LandingPage';
 import Auth from './pages/Auth';
 import StudentDashboard from './pages/StudentDashboard';
-import NewOrder from './pages/NewOrder';
 import ShopDashboard from './pages/ShopDashboard';
 import SuperAdmin from './pages/SuperAdmin';
 import SuperAdminEntry from './pages/SuperAdminEntry';
@@ -64,12 +65,22 @@ function App() {
 
   return (
     <BrowserRouter>
+      
+      {/* Global Liquid Glass Orbs Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-[-10]">
+        <div className="bg-orb w-[600px] h-[600px] bg-emerald-400/30 top-[-10%] left-[-10%]" />
+        <div className="bg-orb w-[800px] h-[800px] bg-indigo-300/20 bottom-[-20%] right-[-10%]" style={{ animationDelay: '-5s' }} />
+        <div className="bg-orb w-[500px] h-[500px] bg-teal-300/30 top-[40%] left-[50%]" style={{ animationDelay: '-10s' }} />
+      </div>
+      
       <Navbar currentUser={currentUser} onLogout={handleLogout} />
       
       <main>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route 
             path="/auth" 
             element={
@@ -98,16 +109,7 @@ function App() {
               )
             } 
           />
-          <Route 
-            path="/student/new-order" 
-            element={
-              currentUser && currentUser.role === 'student' ? (
-                <NewOrder currentUser={currentUser} />
-              ) : (
-                <Navigate to="/auth?mode=login" replace />
-              )
-            } 
-          />
+
 
           {/* Shopkeeper Protected Routes */}
           <Route 
