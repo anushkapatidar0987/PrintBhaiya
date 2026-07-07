@@ -13,4 +13,6 @@ urlpatterns = [
     path('<uuid:id>/reject/', views.RejectOrderView.as_view(), name='order-reject'),
     path('<uuid:id>/mark-ready/', views.MarkReadyView.as_view(), name='order-mark-ready'),
     path('<uuid:id>/mark-collected/', views.MarkCollectedView.as_view(), name='order-mark-collected'),
+    path('<uuid:id>/handle-timeout/', views.HandleOrderTimeoutView.as_view(), name='order-handle-timeout'),
+    path('<uuid:id>/receipt/', views.DownloadReceiptView.as_view(), name='order-receipt'),
 ]

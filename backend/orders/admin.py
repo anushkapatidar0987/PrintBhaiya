@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderFile, OrderStatusHistory
+from .models import Order, OrderFile, OrderStatusHistory, Receipt
 
 class OrderFileInline(admin.TabularInline):
     model = OrderFile
@@ -34,3 +34,10 @@ class OrderStatusHistoryAdmin(admin.ModelAdmin):
     list_display = ('order', 'from_status', 'to_status', 'changed_by', 'created_at')
     list_filter = ('to_status', 'created_at')
     search_fields = ('order__order_number',)
+
+
+@admin.register(Receipt)
+class ReceiptAdmin(admin.ModelAdmin):
+    list_display = ('receipt_number', 'order', 'transaction_reference', 'generated_at')
+    search_fields = ('receipt_number', 'order__order_number', 'transaction_reference')
+    readonly_fields = ('generated_at',)

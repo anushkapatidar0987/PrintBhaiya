@@ -39,3 +39,13 @@ class IsStudentOrShopOwner(BasePermission):
             and request.user.is_authenticated
             and request.user.role in ('STUDENT', 'SHOP_OWNER')
         )
+
+
+class IsStudentOrShopOwnerOrSuperAdmin(BasePermission):
+    """Allow access to STUDENT, SHOP_OWNER, and SUPER_ADMIN roles."""
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.role in ('STUDENT', 'SHOP_OWNER', 'SUPER_ADMIN')
+        )

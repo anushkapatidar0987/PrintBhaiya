@@ -21,6 +21,8 @@ class PricePreviewResponseSerializer(serializers.Serializer):
     platform_fee = serializers.FloatField()
     total = serializers.FloatField()
     rate_per_page = serializers.FloatField()
+    original_total = serializers.FloatField(required=False)
+    discount_applied = serializers.FloatField(required=False)
 
 
 class OrderFileSerializer(serializers.ModelSerializer):
@@ -85,7 +87,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             student=student,
             shop=shop,
             order_number=order_number,
-            status=Order.Status.PENDING_PAYMENT,
+            status=Order.Status.PLACED,
             price_breakdown=price_dict,
             total_amount=price_dict['total'],
             platform_fee=price_dict['platform_fee'],
@@ -105,8 +107,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
         OrderStatusHistory.objects.create(
             order=order,
-            to_status=Order.Status.PENDING_PAYMENT,
-            note='Order created, awaiting payment'
+            to_status=Order.Status.PLACED,
+            note='Order created, pending shopkeeper acceptance'
         )
 
         return order
@@ -115,23 +117,31 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 class OrderListSerializer(serializers.ModelSerializer):
     shop_name = serializers.CharField(source='shop.name', read_only=True)
     student_name = serializers.CharField(source='student.get_full_name', read_only=True)
+    student_phone = serializers.CharField(source='student.phone_number', read_only=True, default='')
     files = OrderFileSerializer(many=True, read_only=True)
+    binding_option_name = serializers.CharField(source='binding_option.name', read_only=True, default='')
+    sla_timeout = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ('id', 'order_number', 'shop_name', 'student_name', 'status', 'color_mode', 
-                  'page_count', 'copies', 'total_amount', 'created_at', 'files')
+        fields = ('id', 'order_number', 'shop_name', 'student_name', 'student_phone', 'status', 'color_mode', 
+                  'page_count', 'copies', 'total_amount', 'created_at', 'files', 'double_sided', 
+                  'binding_option', 'binding_option_name', 'student_comment', 'shop_rejection_reason', 'sla_timeout')
+
+    def get_sla_timeout(self, obj):
+        if obj.status == Order.Status.PLACED:
+            from django.utils import timezone
+            delta = timezone.now() - obj.created_at
+            return delta.total_seconds() > 720  # 12 minutes
+        return False
 
 
 class OrderDetailSerializer(OrderListSerializer):
     files = OrderFileSerializer(many=True, read_only=True)
     status_history = OrderStatusHistorySerializer(many=True, read_only=True)
     shop_address = serializers.CharField(source='shop.address', read_only=True)
-    student_phone = serializers.CharField(source='student.phone_number', read_only=True)
 
     class Meta(OrderListSerializer.Meta):
         fields = OrderListSerializer.Meta.fields + (
-            'double_sided', 'binding_option', 'student_comment', 'shop_rejection_reason',
-            'price_breakdown', 'platform_fee', 'collected_at', 'files', 'status_history',
-            'shop_address', 'student_phone'
+            'price_breakdown', 'platform_fee', 'collected_at', 'status_history', 'shop_address'
         )

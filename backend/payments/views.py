@@ -83,13 +83,13 @@ def verify_payment(request):
             payment.status = Payment.Status.PAID
             payment.save()
 
-            order.status = Order.Status.PLACED
+            order.status = Order.Status.ACCEPTED
             order.save()
 
             OrderStatusHistory.objects.create(
                 order=order,
                 from_status=Order.Status.PENDING_PAYMENT,
-                to_status=Order.Status.PLACED,
+                to_status=Order.Status.ACCEPTED,
                 note='Payment verified successfully'
             )
         return Response({'message': 'Payment verified successfully'})
@@ -126,12 +126,12 @@ def razorpay_webhook(request):
                     payment.save()
 
                     order = payment.order
-                    order.status = Order.Status.PLACED
+                    order.status = Order.Status.ACCEPTED
                     order.save()
                     
                     OrderStatusHistory.objects.create(
                         order=order,
-                        to_status=Order.Status.PLACED,
+                        to_status=Order.Status.ACCEPTED,
                         note='Payment verified via webhook'
                     )
         return Response(status=status.HTTP_200_OK)

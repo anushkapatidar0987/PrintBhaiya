@@ -9,7 +9,7 @@ from shops.models import Shop, PriceList, BindingOption
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'role', 'date_joined')
+        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'role', 'campus_wing', 'date_joined')
         read_only_fields = fields
 
 
@@ -18,7 +18,7 @@ class StudentRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'first_name', 'last_name', 'phone_number', 'password')
+        fields = ('email', 'first_name', 'last_name', 'phone_number', 'campus_wing', 'password')
 
     def create(self, validated_data):
         password = validated_data.pop('password')

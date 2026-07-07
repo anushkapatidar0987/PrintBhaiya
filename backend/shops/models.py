@@ -11,6 +11,7 @@ class Shop(BaseModel):
         OPEN = 'OPEN', 'Open'
         CLOSED = 'CLOSED', 'Closed'
         HOLIDAY = 'HOLIDAY', 'Holiday'
+        MAINTENANCE = 'MAINTENANCE', 'Under Maintenance'
 
     owner = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -27,10 +28,12 @@ class Shop(BaseModel):
     whatsapp_number = models.CharField(max_length=15, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.CLOSED)
+    status = models.CharField(max_length=15, choices=Status.choices, default=Status.CLOSED)
     status_updated_at = models.DateTimeField(auto_now_add=True)
     is_approved = models.BooleanField(default=False, help_text='Super Admin must approve before shop is visible')
     is_active = models.BooleanField(default=True, help_text='Soft-disable by admin')
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    discount_ends_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'shops'
@@ -95,7 +98,7 @@ class BindingOption(BaseModel):
 class ShopStatusLog(BaseModel):
     """Audit log for shop status changes."""
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='status_logs')
-    status = models.CharField(max_length=10, choices=Shop.Status.choices)
+    status = models.CharField(max_length=20, choices=Shop.Status.choices)
     changed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
     )

@@ -21,14 +21,12 @@ class Order(BaseModel):
         COLOR = 'COLOR', 'Color'
 
     # Valid state transitions: current_status -> [allowed_next_statuses]
-    # Simplified: shopkeeper only updates twice (Accept → Ready)
     VALID_TRANSITIONS = {
-        'PENDING_PAYMENT': ['PLACED', 'PAYMENT_FAILED'],
-        'PAYMENT_FAILED': ['PENDING_PAYMENT'],  # retry
-        'PLACED': ['ACCEPTED', 'REJECTED'],
-        'ACCEPTED': ['READY_FOR_COLLECTION'],  # no PRINTING step
+        'PLACED': ['PENDING_PAYMENT', 'REJECTED'],
+        'PENDING_PAYMENT': ['ACCEPTED', 'PAYMENT_FAILED'],
+        'PAYMENT_FAILED': ['PENDING_PAYMENT'],
+        'ACCEPTED': ['READY_FOR_COLLECTION'],
         'READY_FOR_COLLECTION': ['COLLECTED'],
-        # Terminal states: REJECTED, COLLECTED — no transitions out
     }
 
     order_number = models.CharField(max_length=30, unique=True, db_index=True)
@@ -41,7 +39,7 @@ class Order(BaseModel):
         'shops.Shop', on_delete=models.PROTECT, related_name='orders'
     )
     status = models.CharField(
-        max_length=25, choices=Status.choices, default=Status.PENDING_PAYMENT
+        max_length=25, choices=Status.choices, default=Status.PLACED
     )
     color_mode = models.CharField(max_length=10, choices=ColorMode.choices, default=ColorMode.BW)
     page_count = models.PositiveIntegerField(default=1)
@@ -111,3 +109,19 @@ class OrderStatusHistory(BaseModel):
 
     def __str__(self):
         return f'{self.order.order_number}: {self.from_status} → {self.to_status}'
+
+
+class Receipt(BaseModel):
+    """Standardized digital receipt generated upon order collection."""
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='receipt')
+    receipt_number = models.CharField(max_length=50, unique=True)
+    transaction_reference = models.CharField(max_length=100, blank=True, null=True)
+    data = models.JSONField(default=dict, blank=True, help_text='Itemized bill and parameters snapshot')
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'order_receipts'
+        ordering = ['-generated_at']
+
+    def __str__(self):
+        return f"Receipt {self.receipt_number} ({self.order.order_number})"

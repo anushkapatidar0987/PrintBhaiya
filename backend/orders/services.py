@@ -35,16 +35,18 @@ def calculate_order_price(shop, color_mode, page_count, copies, double_sided, bi
     if double_sided and price_list.double_sided_supported:
         if price_list.double_sided_rate_per_page:
             rate_per_page = price_list.double_sided_rate_per_page
+        else:
+            rate_per_page = rate_per_page * Decimal('0.85')
             
     # 2. Base cost
-    base_cost = Decimal(page_count) * rate_per_page * Decimal(copies)
+    base_cost = Decimal(str(page_count)) * rate_per_page * Decimal(str(copies))
     
     # 3. Binding cost
     binding_cost = Decimal('0.00')
     if binding_option_id:
         try:
             binding_opt = BindingOption.objects.get(id=binding_option_id, shop=shop, is_active=True)
-            binding_cost = binding_opt.price * Decimal(copies)
+            binding_cost = binding_opt.price * Decimal(str(copies))
         except BindingOption.DoesNotExist:
             pass
             
@@ -53,6 +55,19 @@ def calculate_order_price(shop, color_mode, page_count, copies, double_sided, bi
     
     # 5. Total
     total = base_cost + binding_cost + platform_fee
+    original_total = total
+    discount_applied = Decimal('0.00')
+    
+    # Check if discount campaign is active
+    from django.utils import timezone
+    if getattr(shop, 'discount_ends_at', None) and shop.discount_ends_at > timezone.now() and getattr(shop, 'discount_percentage', 0) > 0:
+        pct = Decimal(str(shop.discount_percentage))
+        discount_factor = (Decimal('100') - pct) / Decimal('100')
+        discount_applied = (base_cost + binding_cost) * (pct / Decimal('100'))
+        
+        base_cost = base_cost * discount_factor
+        binding_cost = binding_cost * discount_factor
+        total = base_cost + binding_cost + platform_fee
     
     # Check minimum order amount
     if price_list.minimum_order_amount and total < price_list.minimum_order_amount:
@@ -63,7 +78,9 @@ def calculate_order_price(shop, color_mode, page_count, copies, double_sided, bi
         'binding_cost': float(binding_cost),
         'platform_fee': float(platform_fee),
         'total': float(total),
-        'rate_per_page': float(rate_per_page)
+        'rate_per_page': float(rate_per_page),
+        'original_total': float(original_total),
+        'discount_applied': float(discount_applied)
     }
 
 

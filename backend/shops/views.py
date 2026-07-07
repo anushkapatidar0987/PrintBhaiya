@@ -67,6 +67,12 @@ class MyShopStatusView(generics.UpdateAPIView):
 
     @transaction.atomic
     def perform_update(self, serializer):
+        shop = self.get_object()
+        new_status = serializer.validated_data.get('status')
+        if not shop.is_active and new_status == Shop.Status.OPEN:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError("Your shop is currently unlisted by the administrator. You cannot set the status to Open.")
+            
         shop = serializer.save()
         # Log the status change
         ShopStatusLog.objects.create(
@@ -96,8 +102,8 @@ class MyShopPriceListView(generics.UpdateAPIView):
 
         # Update Binding Options if provided in request
         binding_options_data = request.data.get('binding_options')
+        shop = instance.shop
         if binding_options_data is not None:
-            shop = instance.shop
             # For simplicity, update existing by ID, or create new ones
             for opt_data in binding_options_data:
                 opt_id = opt_data.get('id')
@@ -116,6 +122,21 @@ class MyShopPriceListView(generics.UpdateAPIView):
                         price=opt_data.get('price', 0)
                     )
 
+        # Update Discount campaign if provided
+        discount_percentage = request.data.get('discount_percentage')
+        discount_hours = request.data.get('discount_hours')
+        if discount_percentage is not None:
+            from decimal import Decimal
+            try:
+                shop.discount_percentage = Decimal(str(discount_percentage))
+                if discount_hours and float(discount_hours) > 0:
+                    from datetime import timedelta
+                    shop.discount_ends_at = timezone.now() + timedelta(hours=float(discount_hours))
+                else:
+                    shop.discount_ends_at = None
+                shop.save()
+            except Exception as e:
+                print("Failed to save discount campaign info", e)
+
         # Re-fetch full shop details to return
-        shop = instance.shop
         return Response(ShopDetailSerializer(shop).data)

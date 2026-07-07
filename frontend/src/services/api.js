@@ -80,7 +80,9 @@ export const orderService = {
   accept: (id) => apiClient.patch(`/orders/${id}/accept/`),
   reject: (id, reason) => apiClient.patch(`/orders/${id}/reject/`, { reason }),
   markReady: (id) => apiClient.patch(`/orders/${id}/mark-ready/`),
-  markCollected: (id) => apiClient.patch(`/orders/${id}/mark-collected/`),
+  markCollected: (id, verificationCode) => apiClient.patch(`/orders/${id}/mark-collected/`, { verification_code: verificationCode }),
+  handleOrderTimeout: (id, action, newShopId) => apiClient.post(`/orders/${id}/handle-timeout/`, { action, new_shop_id: newShopId }),
+  getReceipt: (id) => apiClient.get(`/orders/${id}/receipt/`),
 };
 
 // --- Payment Services ---
@@ -95,6 +97,24 @@ export const adminService = {
   getPendingShops: () => apiClient.get('/superadmin/shops/pending/'),
   approveShop: (id) => apiClient.patch(`/superadmin/shops/${id}/approve/`),
   getAllOrders: () => apiClient.get('/superadmin/orders/'),
+  
+  // Broadcasts / Notices
+  createNotice: (data) => apiClient.post('/superadmin/notices/', data),
+  getNotices: () => apiClient.get('/superadmin/notices/'),
+  getNoticeFeed: () => apiClient.get('/superadmin/notices/feed/'),
+
+  // Users
+  getUsers: () => apiClient.get('/superadmin/users/'),
+
+  // Shops List for admin
+  getShopsList: () => apiClient.get('/superadmin/shops/all/'),
+
+  // Shop status & active controls
+  getShopStatusHistory: (id) => apiClient.get(`/superadmin/shops/${id}/status-history/`),
+  toggleShopActive: (id) => apiClient.patch(`/superadmin/shops/${id}/toggle-active/`),
+
+  // Support
+  createSupportTicket: (formData) => apiClient.post('/superadmin/support-ticket/', formData),
 };
 
 export default apiClient;

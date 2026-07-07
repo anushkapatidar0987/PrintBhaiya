@@ -16,6 +16,7 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, help_text='Indian format with +91 prefix')
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
     is_email_verified = models.BooleanField(default=False)
+    campus_wing = models.CharField(max_length=100, blank=True, null=True, help_text='Campus wing / Location for filtering')
 
     # Use email as the login identifier instead of username
     USERNAME_FIELD = 'email'
